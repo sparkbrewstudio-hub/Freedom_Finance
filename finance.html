@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.29.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #ffffff; --bg2: #f5f5f2; --bg3: #eeede9;
+  --text: #1a1a18; --text2: #6b6b67; --text3: #9e9e9a;
+  --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.28);
+  --green: #0f6e56; --red: #a32d2d; --blue: #185fa5; --blue-bg: #e6f1fb;
+  --rad: 8px; --rad-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1a; --bg2: #252523; --bg3: #2e2e2c;
+    --text: #f0efea; --text2: #a0a09c; --text3: #6e6e6a;
+    --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.3);
+    --green: #5dcaa5; --red: #f09595; --blue: #85b7eb; --blue-bg: #0c2940;
+  }
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+.nav { background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; position: sticky; top: 0; z-index: 100; }
+.nav-brand { padding: 0 16px; font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 7px; border-right: 0.5px solid var(--border); white-space: nowrap; }
+.nav-tabs { display: flex; flex: 1; }
+.nav-tab { flex: 1; height: 48px; border: none; background: none; color: var(--text2); font-size: 14px; font-family: inherit; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+.nav-tab:hover { color: var(--text); background: var(--bg2); }
+.nav-tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+.page { display: none; max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 5rem; }
+.page.active { display: block; }
+.page-title { font-size: 18px; font-weight: 500; margin-bottom: .6rem; }
+.note-wrap { margin-bottom: 1rem; }
+.note-lbl { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+textarea.note { width: 100%; min-height: 48px; border: 0.5px solid var(--border); border-radius: var(--rad); padding: 8px 10px; font-size: 14px; font-family: inherit; background: var(--bg2); color: var(--text); resize: vertical; line-height: 1.6; }
+textarea.note:focus { outline: none; border-color: var(--border2); }
+.card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--rad-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.sec-title { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .85rem; }
+.sec-desc { font-size: 13px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
+input[type=text], input[type=number], input[type=date], select {
+  border: 0.5px solid var(--border); border-radius: var(--rad);
+  background: var(--bg2); color: var(--text); font-size: 13px; font-family: inherit;
+  height: 34px; padding: 0 9px; width: 100%;
+}
+input:focus, select:focus { outline: none; border-color: var(--border2); }
+.field-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.field-row:last-child { margin-bottom: 0; }
+.field-lbl { font-size: 13px; color: var(--text2); min-width: 120px; flex-shrink: 0; }
+.field-row input, .field-row select { flex: 1; }
+.f-micro { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+.f-val { font-size: 14px; font-weight: 500; padding: 5px 0; }
+.btn { height: 32px; padding: 0 10px; border: 0.5px solid var(--border2); border-radius: var(--rad); background: none; color: var(--text2); cursor: pointer; font-size: 12px; font-family: inherit; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.btn:hover { background: var(--bg2); }
+.btn-sm { height: 24px; padding: 0 7px; font-size: 10px; }
+.btn-del { height: 34px; width: 34px; padding: 0; justify-content: center; flex-shrink: 0; }
+.btn-del:hover { color: var(--red); border-color: var(--red); }
+.add-row-btn { background: none; border: 0.5px solid var(--border2); border-radius: var(--rad); cursor: pointer; color: var(--text2); font-size: 12px; font-family: inherit; padding: 5px 10px; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; }
+.add-row-btn:hover { background: var(--bg2); }
+.btn-transfer { width: 100%; height: 44px; background: var(--text); color: var(--bg); border: none; border-radius: var(--rad-lg); font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.btn-transfer:hover { opacity: .88; }
+.btn-save { width: 100%; height: 42px; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--rad-lg); font-size: 14px; font-weight: 500; font-family: inherit; color: var(--text); cursor: pointer; margin-top: .5rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-save:hover { background: var(--bg2); }
+.m-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.metric { background: var(--bg2); border-radius: var(--rad); padding: 10px 12px; }
+.m-lbl { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.m-val { font-size: 18px; font-weight: 500; }
+.m-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { font-size: 11px; color: var(--text2); font-weight: 500; padding: 0 4px 8px; text-align: right; white-space: nowrap; }
+th:first-child { text-align: left; padding-left: 0; }
+td { padding: 5px 4px; vertical-align: middle; border-top: 0.5px solid var(--border); }
+td:first-child { padding-left: 0; }
+.rn { font-weight: 500; font-size: 13px; }
+.rs { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.num { text-align: right; }
+.inactive-row { opacity: .4; }
+.inactive-tag { font-size: 10px; color: var(--text3); background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--rad); padding: 1px 5px; display: inline-block; margin-top: 2px; }
+.mi { width: 76px; height: 28px; padding: 0 5px; text-align: right; }
+.saved-col { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.cc-cell { display: flex; align-items: center; gap: 3px; justify-content: flex-end; flex-wrap: wrap; }
+.cc-sel { width: 72px !important; height: 28px !important; padding: 0 4px !important; font-size: 11px !important; flex-shrink: 0; }
+.cc-amt-inp { width: 62px; height: 28px; padding: 0 4px; text-align: right; border: 0.5px solid var(--border); border-radius: var(--rad); background: var(--bg2); color: var(--text); font-size: 13px; font-family: inherit; }
+.cc-amt-inp:focus { outline: none; border-color: var(--border2); }
+.cc-btn { height: 28px; padding: 0 8px; font-size: 11px; border: 0.5px solid var(--border2); border-radius: var(--rad); background: none; color: var(--text2); cursor: pointer; font-family: inherit; white-space: nowrap; }
+.cc-btn:hover { background: var(--bg2); }
+.spend-pill { background: var(--bg2); border-radius: var(--rad); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.transfer-box { background: var(--blue-bg); border: 0.5px solid var(--border); border-radius: var(--rad); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.t-label { font-size: 13px; color: var(--blue); display: flex; align-items: center; gap: 5px; }
+.t-val { font-size: 18px; font-weight: 500; color: var(--blue); }
+.gg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.gb { background: var(--bg2); border-radius: var(--rad); padding: 9px 12px; }
+.gb-l { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+.gb-v { font-size: 15px; font-weight: 500; }
+.gr { background: var(--bg2); border-radius: var(--rad); padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; border: 0.5px solid var(--border); }
+.cat-card, .bill-card, .sv-cc-card { border: 0.5px solid var(--border); border-radius: var(--rad); padding: 14px; margin-bottom: 8px; }
+.cat-card:last-child, .bill-card:last-child, .sv-cc-card:last-child { margin-bottom: 0; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+.cat-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.cat-hdr input { flex: 1; }
+.tgl { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.tgl input { opacity: 0; width: 0; height: 0; }
+.tgl-s { position: absolute; inset: 0; background: var(--border2); border-radius: 20px; cursor: pointer; transition: background .2s; }
+.tgl-s:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform .2s; }
+.tgl input:checked + .tgl-s { background: var(--green); }
+.tgl input:checked + .tgl-s:before { transform: translateX(16px); }
+.tgl-row { display: flex; align-items: center; gap: 8px; }
+.tgl-lbl { font-size: 13px; color: var(--text2); }
+.chk-row { display: flex; align-items: flex-start; gap: 8px; }
+.chk-row input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+.chk-lbl { font-size: 13px; color: var(--text2); line-height: 1.4; }
+.sp-pill { background: var(--bg2); border-radius: var(--rad); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.disp-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.disp-row label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); cursor: pointer; }
+.disp-row input[type=checkbox] { accent-color: var(--green); }
+.totals-wrap { border-top: 0.5px solid var(--border); padding-top: 10px; margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+.tc { background: var(--bg2); border-radius: var(--rad); padding: 8px 12px; flex: 1; min-width: 90px; }
+.tc-l { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+.tc-v { font-size: 14px; font-weight: 500; }
+.oo-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+.oo-desc { flex: 2; }
+.oo-amt { flex: 1; max-width: 110px; }
+.oo-breakdown { border-top: 0.5px solid var(--border); margin-top: 10px; padding-top: 10px; }
+.oo-line { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); padding: 2px 0; }
+.oo-net { display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; padding-top: 6px; margin-top: 4px; border-top: 0.5px solid var(--border); }
+.oo-gross { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); padding: 4px 0 0; }
+.badge { display: inline-block; font-size: 10px; background: var(--blue-bg); color: var(--blue); border-radius: var(--rad); padding: 1px 5px; margin-left: 4px; vertical-align: middle; }
+.cc-summary-bar { background: var(--bg2); border-radius: var(--rad); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 10px; border-top: 0.5px solid var(--border); padding-top: 14px; }
+.info-box { background: var(--bg2); border-radius: var(--rad); padding: 8px 12px; font-size: 12px; color: var(--text2); margin-top: 8px; line-height: 1.6; }
+.chip { background: var(--bg2); border-radius: var(--rad); padding: 3px 7px; font-size: 12px; color: var(--text2); display: inline-block; }
+.chip strong { color: var(--text); font-weight: 500; }
+.owing-pill { background: var(--bg2); border-radius: var(--rad); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.err { font-size: 12px; color: var(--red); }
+.pos { color: var(--green); } .neg { color: var(--red); }
+.sep { border: none; border-top: 0.5px solid var(--border); margin: 8px 0; }
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #1D9E75; color: white; border-radius: var(--rad); padding: 10px 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 9999; display: flex; align-items: center; gap: 6px; }
+.toast.show { opacity: 1; }
+@media (max-width: 500px) {
+  .nav-brand { display: none; }
+  .m-grid, .gg, .g4 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand"><i class="ti ti-wallet" aria-hidden="true" style="font-size:16px"></i>Finance</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('paycheck',this)">Paycheck</button>
+    <button class="nav-tab" onclick="showPage('savings',this)">Savings</button>
+    <button class="nav-tab" onclick="showPage('settings',this)">Settings</button>
+  </div>
+</nav>
+
+<!-- ===== PAYCHECK ===== -->
+<div id="page-paycheck" class="page active">
+  <h1 class="page-title">Paycheck</h1>
+  <div class="note-wrap">
+    <div class="note-lbl">Note</div>
+    <textarea class="note" id="pc-note" placeholder="Add a note here..."></textarea>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Income</div>
+    <div class="field-row">
+      <span class="field-lbl">Amount ($)</span>
+      <input type="text" id="pc-income" placeholder="e.g. 550 + 250" oninput="calcPaycheck()">
+    </div>
+    <div id="pc-err" class="err" style="display:none;padding-left:130px;margin-bottom:4px">Invalid expression</div>
+    <div class="field-row">
+      <span class="field-lbl">Pay frequency</span>
+      <select id="pc-freq" onchange="calcPaycheck()">
+        <option value="weekly">Weekly</option>
+        <option value="fortnightly" selected>Fortnightly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Expenses &amp; remaining</div>
+    <div class="m-grid">
+      <div class="metric"><div class="m-lbl">Gross income</div><div class="m-val" id="pc-gross">$0.00</div></div>
+      <div class="metric"><div class="m-lbl">Set aside for expenses</div><div class="m-val" id="pc-exp-period">$0.00</div><div class="m-sub" id="pc-exp-sub">—</div></div>
+      <div class="metric"><div class="m-lbl">After expenses</div><div class="m-val" id="pc-remaining">$0.00</div></div>
+      <div class="metric"><div class="m-lbl">Monthly total</div><div class="m-val" id="pc-monthly">$0.00</div><div class="m-sub" id="pc-annual">—</div></div>
+    </div>
+    <div class="info-box" id="pc-infobox" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Sub-categories</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Category</th>
+          <th style="text-align:right">Basis</th>
+          <th style="text-align:right">Rate</th>
+          <th style="text-align:right">This paycheck</th>
+        </tr></thead>
+        <tbody id="pc-subcat-body"></tbody>
+      </table>
+    </div>
+    <div class="spend-pill">
+      <div>
+        <div style="font-size:13px;font-weight:500">Spending</div>
+        <div style="font-size:11px;color:var(--text2)">After all deductions</div>
+      </div>
+      <span style="font-size:18px;font-weight:500" id="pc-spend-amt">$0.00</span>
+    </div>
+    <div class="transfer-box">
+      <span class="t-label"><i class="ti ti-arrow-right" aria-hidden="true"></i>Transfer to savings account</span>
+      <span class="t-val" id="pc-transfer">$0.00</span>
+    </div>
+  </div>
+
+  <button class="btn-transfer" onclick="transferToSavings()">
+    <i class="ti ti-arrow-right" aria-hidden="true"></i>Transfer sub-categories to savings
+  </button>
+
+  <div class="card">
+    <div class="sec-title">One-off payments</div>
+    <div class="sec-desc">For windfalls like tax returns. Sub-category percentages apply to these too.</div>
+    <div id="pc-oo-list"></div>
+    <button class="add-row-btn" onclick="addOneOff()"><i class="ti ti-plus" aria-hidden="true"></i> Add payment</button>
+    <div id="pc-oo-breakdown" style="display:none" class="oo-breakdown"></div>
+  </div>
+</div>
+
+<!-- ===== SAVINGS ===== -->
+<div id="page-savings" class="page">
+  <h1 class="page-title">Savings</h1>
+  <div class="note-wrap">
+    <div class="note-lbl">Note</div>
+    <textarea class="note" id="sv-note" placeholder="Add a note here..."></textarea>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Sub-categories</div>
+    <div class="tbl-wrap">
+      <table style="min-width:530px">
+        <thead><tr>
+          <th>Category</th>
+          <th style="text-align:right">From paycheck</th>
+          <th style="text-align:right">Add</th>
+          <th style="text-align:right">Spent</th>
+          <th style="text-align:right">Total</th>
+          <th style="text-align:right">Credit card</th>
+        </tr></thead>
+        <tbody id="sv-subcat-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Expenses</div>
+    <div class="tbl-wrap">
+      <table style="min-width:530px">
+        <thead><tr>
+          <th>Bill</th>
+          <th style="text-align:right">Auto-saved</th>
+          <th style="text-align:right">Add</th>
+          <th style="text-align:right">Spent</th>
+          <th style="text-align:right">Total</th>
+          <th style="text-align:right">Credit card</th>
+        </tr></thead>
+        <tbody id="sv-bill-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" id="sv-cc-section" style="display:none">
+    <div class="sec-title">Credit cards</div>
+    <div id="sv-cc-list"></div>
+    <div id="sv-cc-totals"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Account total</div>
+    <div class="gg" id="sv-grand-grid"></div>
+    <div class="gr">
+      <div>
+        <div style="font-size:14px;font-weight:500">Total in savings account</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">What your balance should be right now</div>
+      </div>
+      <div id="sv-grand-total" style="font-size:22px;font-weight:500" class="pos">$0.00</div>
+    </div>
+  </div>
+
+  <button class="btn-save" onclick="saveSavingsPage()">
+    <i class="ti ti-device-floppy" aria-hidden="true"></i>Save
+  </button>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div id="page-settings" class="page">
+  <h1 class="page-title">Settings</h1>
+  <div class="note-wrap">
+    <div class="note-lbl">Note</div>
+    <textarea class="note" id="st-note" placeholder="Add a note here..."></textarea>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Sub-categories</div>
+    <div class="sec-desc">Add up to 4 categories. Spending is auto-calculated from what's left over.</div>
+    <div id="st-cat-list"></div>
+    <button class="add-row-btn" id="st-add-cat-btn" onclick="addCat()"><i class="ti ti-plus" aria-hidden="true"></i> Add category</button>
+    <div class="sp-pill">
+      <div>
+        <div style="font-size:13px;font-weight:500">Spending (auto-calculated)</div>
+        <div style="font-size:11px;color:var(--text2)">Whatever is left after all categories</div>
+      </div>
+      <span style="font-size:18px;font-weight:500" id="st-spend-pct">100%</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Expenses</div>
+    <div class="sec-desc">Add each bill. Enter the amount in the frequency you pay it. Set a transfer date and the app will automatically add that amount to your savings on schedule.</div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">Show amounts as</div>
+      <div class="disp-row">
+        <label><input type="checkbox" id="st-show-w" checked onchange="updateAllBillChips()"> Weekly</label>
+        <label><input type="checkbox" id="st-show-f" checked onchange="updateAllBillChips()"> Fortnightly</label>
+        <label><input type="checkbox" id="st-show-m" checked onchange="updateAllBillChips()"> Monthly</label>
+      </div>
+    </div>
+    <div id="st-bill-list"></div>
+    <button class="add-row-btn" onclick="addBill()"><i class="ti ti-plus" aria-hidden="true"></i> Add bill</button>
+    <div class="totals-wrap" id="st-bill-totals"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">Credit cards</div>
+    <div class="sec-desc">Add your credit cards to track spending and set aside repayment funds on the savings page.</div>
+    <div id="st-cc-list"></div>
+    <button class="add-row-btn" onclick="addCC()"><i class="ti ti-plus" aria-hidden="true"></i> Add credit card</button>
+  </div>
+
+  <button class="btn-save" onclick="saveAllSettings()">
+    <i class="ti ti-device-floppy" aria-hidden="true"></i>Save settings
+  </button>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check" aria-hidden="true"></i><span id="toast-msg"></span></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let S = {
+  categories: [
+    { name: 'Tithe', pct: 10, basis: 'full', toSavings: false, notInSavings: true },
+    { name: 'Savings', pct: 15, basis: 'after', toSavings: true, notInSavings: false },
+    { name: 'Investment', pct: 5, basis: 'after', toSavings: true, notInSavings: false }
+  ],
+  bills: [
+    { name: 'Rent', amount: 400, enteredFreq: 'weekly', setAsideFreq: 'fortnightly', date: '', notInSavings: true },
+    { name: 'Electricity', amount: 120, enteredFreq: 'monthly', setAsideFreq: 'fortnightly', date: '', notInSavings: false }
+  ],
+  creditCards: [{ name: 'Visa', limit: 3000 }],
+  displayCols: { w: true, f: true, m: true },
+  notes: { paycheck: '', savings: '', settings: '' }
+};
+
+// D.creditCards[i]:
+//   charged      — total expenses charged to this card via table Add buttons
+//   amountSaved  — money in savings pool earmarked for this card
+//                  (auto-increases when table Add is used; manually added via CC Add button)
+//   creditRemaining — manually entered from bank statement (for "amount owing" calc)
+let D = { subcats: [], bills: [], creditCards: [] };
+let ooItems = [];
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function fmt(n) {
+  n = n || 0;
+  const a = Math.abs(n);
+  const s = '$' + a.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return n < 0 ? '-' + s : s;
+}
+function fc(n) { return n >= 0 ? 'pos' : 'neg'; }
+
+function evalExpr(raw) {
+  const c = String(raw).replace(/[^0-9.+\-*/() ]/g, '').trim();
+  if (!c) return 0;
+  try {
+    const r = Function('"use strict";return(' + c + ')')();
+    return (isFinite(r) && !isNaN(r)) ? Math.max(0, r) : 0;
+  } catch(e) { return 0; }
+}
+
+function toMonthly(a, f) {
+  if (f === 'weekly') return (a || 0) * 52 / 12;
+  if (f === 'fortnightly') return (a || 0) * 26 / 12;
+  return a || 0;
+}
+function toWeekly(a, f) {
+  if (f === 'weekly') return a || 0;
+  if (f === 'fortnightly') return (a || 0) / 2;
+  return (a || 0) * 12 / 52;
+}
+function toFortnightly(a, f) {
+  if (f === 'weekly') return (a || 0) * 2;
+  if (f === 'fortnightly') return a || 0;
+  return (a || 0) * 12 / 26;
+}
+function toPeriod(a, entF, payF) {
+  const m = toMonthly(a, entF);
+  if (payF === 'weekly') return m * 12 / 52;
+  if (payF === 'fortnightly') return m * 12 / 26;
+  return m;
+}
+
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function attachMath(el, cb) {
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  el.addEventListener('blur', () => {
+    const v = evalExpr(el.value);
+    el.value = v.toFixed(2);
+    cb(v);
+  });
+}
+
+// ============================================================
+// STORAGE
+// ============================================================
+function loadAll() {
+  try { const s = localStorage.getItem('fp_s'); if (s) S = JSON.parse(s); } catch(e) {}
+  try { const d = localStorage.getItem('fp_d'); if (d) D = JSON.parse(d); } catch(e) {}
+  if (!S.notes) S.notes = { paycheck: '', savings: '', settings: '' };
+  if (!S.creditCards) S.creditCards = [];
+  if (!S.displayCols) S.displayCols = { w: true, f: true, m: true };
+  if (!D.subcats) D.subcats = [];
+  if (!D.bills) D.bills = [];
+  if (!D.creditCards) D.creditCards = [];
+
+  // Migrate old D.creditCards format (had just { remaining }) to new format
+  D.creditCards = D.creditCards.map(c => ({
+    creditRemaining: c.creditRemaining !== undefined ? c.creditRemaining : (c.remaining || 0),
+    charged: c.charged || 0,
+    amountSaved: c.amountSaved || 0
+  }));
+
+  ensureArrays();
+  checkScheduledExpenses();
+}
+
+function ensureArrays() {
+  const nc = (S.categories || []).length;
+  const nb = (S.bills || []).length;
+  const ncc = (S.creditCards || []).length;
+  while (D.subcats.length < nc) D.subcats.push({ fromPaycheck: 0, manualAdd: 0, spent: 0, carriedTotal: 0, ccCharged: 0 });
+  while (D.bills.length < nb) D.bills.push({ amountSaved: 0, manualAdd: 0, spent: 0, carriedTotal: 0, ccCharged: 0, lastAddedDate: null });
+  while (D.creditCards.length < ncc) D.creditCards.push({ creditRemaining: 0, charged: 0, amountSaved: 0 });
+}
+
+function saveS() { localStorage.setItem('fp_s', JSON.stringify(S)); }
+function saveD() { localStorage.setItem('fp_d', JSON.stringify(D)); }
+
+function saveCurrentNotes() {
+  const pc = document.getElementById('pc-note');
+  const sv = document.getElementById('sv-note');
+  const st = document.getElementById('st-note');
+  if (pc) S.notes.paycheck = pc.value;
+  if (sv) S.notes.savings = sv.value;
+  if (st) S.notes.settings = st.value;
+}
+
+// ============================================================
+// SCHEDULED EXPENSES
+// ============================================================
+function checkScheduledExpenses() {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const bills = S.bills || [];
+  let changed = false;
+
+  bills.forEach((bill, i) => {
+    if (!D.bills[i]) D.bills[i] = { amountSaved: 0, manualAdd: 0, spent: 0, carriedTotal: 0, ccCharged: 0, lastAddedDate: null };
+    if (bill.notInSavings || !bill.date) return;
+
+    const startDate = new Date(bill.date + 'T00:00:00');
+    if (isNaN(startDate.getTime()) || startDate > today) return;
+
+    const freq = bill.setAsideFreq || 'fortnightly';
+    const intervalDays = freq === 'weekly' ? 7 : 14;
+    const amtPerPeriod = freq === 'weekly'
+      ? toWeekly(bill.amount || 0, bill.enteredFreq)
+      : toFortnightly(bill.amount || 0, bill.enteredFreq);
+
+    const lastStr = D.bills[i].lastAddedDate;
+    const lastAdded = lastStr ? new Date(lastStr + 'T00:00:00') : null;
+
+    let current = new Date(startDate);
+    if (lastAdded) {
+      while (current <= lastAdded) current.setDate(current.getDate() + intervalDays);
+    }
+
+    while (current <= today) {
+      D.bills[i].amountSaved = (D.bills[i].amountSaved || 0) + amtPerPeriod;
+      D.bills[i].lastAddedDate = current.toISOString().split('T')[0];
+      current.setDate(current.getDate() + intervalDays);
+      changed = true;
+    }
+  });
+
+  if (changed) saveD();
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name, btn) {
+  saveCurrentNotes();
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'paycheck') initPaycheck();
+  if (name === 'savings') initSavings();
+  if (name === 'settings') initSettings();
+}
+
+// ============================================================
+// PAYCHECK PAGE
+// ============================================================
+function initPaycheck() {
+  document.getElementById('pc-note').value = S.notes.paycheck || '';
+  calcPaycheck();
+}
+
+function getPcIncome() {
+  const raw = document.getElementById('pc-income').value;
+  const clean = raw.replace(/[^0-9.+\-*/() ]/g, '').trim();
+  if (!clean) return 0;
+  try {
+    const r = Function('"use strict";return(' + clean + ')')();
+    return (isFinite(r) && !isNaN(r)) ? Math.max(0, r) : 0;
+  } catch(e) { return 0; }
+}
+
+function calcPaycheck() {
+  const raw = document.getElementById('pc-income').value;
+  const errEl = document.getElementById('pc-err');
+  const clean = raw.replace(/[^0-9.+\-*/() ]/g, '').trim();
+  let income = 0;
+  if (clean) {
+    try {
+      const r = Function('"use strict";return(' + clean + ')')();
+      if (!isFinite(r) || isNaN(r)) { errEl.style.display = 'block'; return; }
+      income = Math.max(0, r);
+    } catch(e) { errEl.style.display = 'block'; return; }
+  }
+  errEl.style.display = 'none';
+
+  const freq = document.getElementById('pc-freq').value;
+  const monthly = (S.bills || []).reduce((s, b) => s + toMonthly(b.amount || 0, b.enteredFreq), 0);
+  const periodExp = toPeriod(monthly, 'monthly', freq);
+  const afterExp = Math.max(0, income - periodExp);
+
+  document.getElementById('pc-gross').textContent = fmt(income);
+  document.getElementById('pc-exp-period').textContent = fmt(periodExp);
+  document.getElementById('pc-exp-sub').textContent = 'based on ' + fmt(monthly) + '/month';
+  document.getElementById('pc-remaining').textContent = fmt(afterExp);
+  document.getElementById('pc-remaining').className = 'm-val ' + fc(afterExp);
+  document.getElementById('pc-monthly').textContent = fmt(monthly);
+  document.getElementById('pc-annual').textContent = '= ' + fmt(monthly * 12) + '/year';
+
+  const ib = document.getElementById('pc-infobox');
+  if (monthly > 0 && income > 0) {
+    const fl = freq === 'weekly' ? 'week' : freq === 'fortnightly' ? 'fortnight' : 'month';
+    ib.innerHTML = `Setting aside <strong>${fmt(periodExp)}</strong> each ${fl} covers your ${fmt(monthly)}/month in bills — money is there when the bill lands.`;
+    ib.style.display = '';
+  } else {
+    ib.style.display = 'none';
+  }
+
+  renderPcSubcats(income, afterExp);
+}
+
+function renderPcSubcats(income, afterExp) {
+  const cats = S.categories || [];
+  const tbody = document.getElementById('pc-subcat-body');
+  tbody.innerHTML = '';
+  let totalDeducted = 0;
+  let transferTotal = 0;
+
+  cats.forEach(cat => {
+    const base = cat.basis === 'full' ? income : afterExp;
+    const amt = base * ((cat.pct || 0) / 100);
+    totalDeducted += amt;
+    if (cat.toSavings) transferTotal += amt;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rn">${cat.name || '—'}</span>${cat.toSavings ? '<span class="badge">savings acct</span>' : ''}</td>
+      <td class="num"><span style="font-size:11px;color:var(--text2)">${cat.basis === 'full' ? 'Full pay' : 'After exp.'}</span></td>
+      <td class="num"><span style="font-size:12px;color:var(--text2)">${cat.pct || 0}%</span></td>
+      <td class="num" style="font-weight:500">${fmt(amt)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('pc-spend-amt').textContent = fmt(Math.max(0, afterExp - totalDeducted));
+  document.getElementById('pc-transfer').textContent = fmt(transferTotal);
+}
+
+function transferToSavings() {
+  const income = getPcIncome();
+  if (!income) { showToast('Enter your paycheck amount first'); return; }
+
+  const freq = document.getElementById('pc-freq').value;
+  const monthly = (S.bills || []).reduce((s, b) => s + toMonthly(b.amount || 0, b.enteredFreq), 0);
+  const periodExp = toPeriod(monthly, 'monthly', freq);
+  const afterExp = Math.max(0, income - periodExp);
+  const ooTotal = ooItems.reduce((s, it) => s + evalExpr(it.amount), 0);
+
+  ensureArrays();
+  (S.categories || []).forEach((cat, i) => {
+    if (!cat.toSavings || cat.notInSavings) return;
+    const base = cat.basis === 'full' ? income : afterExp;
+    const paycheckAmt = base * ((cat.pct || 0) / 100);
+    const ooAmt = ooTotal * ((cat.pct || 0) / 100);
+    D.subcats[i].fromPaycheck = (D.subcats[i].fromPaycheck || 0) + paycheckAmt + ooAmt;
+  });
+
+  S.notes.paycheck = document.getElementById('pc-note').value;
+  saveD(); saveS();
+  showToast('Sub-categories transferred to savings');
+}
+
+// ONE-OFF PAYMENTS
+function addOneOff() { ooItems.push({ desc: '', amount: '' }); renderOO(); }
+function removeOO(i) { ooItems.splice(i, 1); renderOO(); }
+
+function renderOO() {
+  const list = document.getElementById('pc-oo-list');
+  list.innerHTML = '';
+  ooItems.forEach((item, i) => {
+    const d = document.createElement('div');
+    d.className = 'oo-row';
+    d.innerHTML = `
+      <input type="text" class="oo-desc" placeholder="Description" value="${item.desc}" oninput="ooItems[${i}].desc=this.value">
+      <input type="text" class="oo-amt" placeholder="Amount" value="${item.amount}" oninput="ooItems[${i}].amount=this.value;calcOO()">
+      <button class="btn btn-del" onclick="removeOO(${i})" aria-label="Remove"><i class="ti ti-x" aria-hidden="true"></i></button>
+    `;
+    list.appendChild(d);
+  });
+  calcOO();
+}
+
+function calcOO() {
+  const gross = ooItems.reduce((s, it) => s + evalExpr(it.amount), 0);
+  const cats = S.categories || [];
+  const breakdown = document.getElementById('pc-oo-breakdown');
+  if (gross <= 0 || cats.length === 0) { breakdown.style.display = 'none'; return; }
+
+  let totalDeducted = 0;
+  const lines = cats.map(cat => {
+    const amt = gross * ((cat.pct || 0) / 100);
+    totalDeducted += amt;
+    return `<div class="oo-line"><span>${cat.name || '—'} (${cat.pct}%)</span><span>${fmt(amt)}</span></div>`;
+  });
+
+  breakdown.style.display = '';
+  breakdown.innerHTML = `
+    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Sub-category deductions</div>
+    ${lines.join('')}
+    <div class="oo-net"><span>Net one-off spending</span><span>${fmt(Math.max(0, gross - totalDeducted))}</span></div>
+    <div class="oo-gross"><span style="color:var(--text2)">Gross one-off total</span><span>${fmt(gross)}</span></div>
+  `;
+}
+
+// ============================================================
+// SAVINGS PAGE
+// ============================================================
+function subcatBal(d) {
+  return (d.carriedTotal || 0) + (d.fromPaycheck || 0) + (d.manualAdd || 0) - (d.spent || 0);
+}
+function billBal(d) {
+  return (d.carriedTotal || 0) + (d.amountSaved || 0) + (d.manualAdd || 0) - (d.spent || 0);
+}
+
+function initSavings() {
+  document.getElementById('sv-note').value = S.notes.savings || '';
+  ensureArrays();
+  renderSvSubcats();
+  renderSvBills();
+  renderSvCC();
+  renderSvGrand();
+}
+
+// Returns HTML for a card selector dropdown (only rendered when > 1 card)
+function ccCardSelect(rowId) {
+  const ccs = S.creditCards || [];
+  if (ccs.length <= 1) return '';
+  const opts = ccs.map((cc, j) => `<option value="${j}">${cc.name || 'Card ' + (j + 1)}</option>`).join('');
+  return `<select class="cc-sel" id="${rowId}-sel">${opts}</select>`;
+}
+
+function getSelectedCard(rowId) {
+  const sel = document.getElementById(rowId + '-sel');
+  return sel ? parseInt(sel.value) : 0;
+}
+
+function renderSvSubcats() {
+  const cats = S.categories || [];
+  const tbody = document.getElementById('sv-subcat-body');
+  tbody.innerHTML = '';
+  cats.forEach((cat, i) => {
+    const d = D.subcats[i] || {};
+    const inactive = cat.notInSavings;
+    const bal = inactive ? 0 : subcatBal(d);
+    const tr = document.createElement('tr');
+    if (inactive) tr.className = 'inactive-row';
+    const ccId = `sv-sc-cc-${i}`;
+    tr.innerHTML = `
+      <td>
+        <div class="rn">${cat.name || '—'}</div>
+        <div class="rs">${cat.pct}% · ${cat.basis === 'full' ? 'full pay' : 'after expenses'}</div>
+        ${inactive ? '<span class="inactive-tag">Paid immediately</span>' : ''}
+      </td>
+      <td class="num">
+        ${inactive ? '—' : `<div class="saved-col">
+          <span style="font-weight:500">${fmt(d.fromPaycheck || 0)}</span>
+          <button class="btn btn-sm" onclick="stzSc(${i})">Set to zero</button>
+        </div>`}
+      </td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-sc-add-${i}" value="${(d.manualAdd || 0).toFixed(2)}">`}</td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-sc-spt-${i}" value="${(d.spent || 0).toFixed(2)}">`}</td>
+      <td class="num" id="sv-sc-tot-${i}"><span class="${fc(bal)}">${inactive ? '—' : fmt(bal)}</span></td>
+      <td>${inactive ? '<span style="color:var(--text3);font-size:12px">—</span>' : `
+        <div class="cc-cell">
+          ${ccCardSelect(ccId)}
+          <input class="cc-amt-inp" id="${ccId}" placeholder="0.00">
+          <button class="cc-btn" onclick="ccAddSc(${i})">Add</button>
+        </div>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+    if (!inactive) {
+      attachMath(document.getElementById(`sv-sc-add-${i}`), v => { D.subcats[i].manualAdd = v; updateScTot(i); });
+      attachMath(document.getElementById(`sv-sc-spt-${i}`), v => { D.subcats[i].spent = v; updateScTot(i); });
+    }
+  });
+}
+
+function updateScTot(i) {
+  const bal = subcatBal(D.subcats[i]);
+  const el = document.getElementById(`sv-sc-tot-${i}`);
+  if (el) el.innerHTML = `<span class="${fc(bal)}">${fmt(bal)}</span>`;
+  renderSvGrand();
+}
+
+function stzSc(i) {
+  const d = D.subcats[i];
+  d.carriedTotal = subcatBal(d);
+  d.fromPaycheck = 0; d.manualAdd = 0; d.spent = 0;
+  // ccCharged intentionally NOT reset
+  renderSvSubcats(); renderSvGrand();
+}
+
+function ccAddSc(i) {
+  const ccId = `sv-sc-cc-${i}`;
+  const inp = document.getElementById(ccId);
+  const amt = evalExpr(inp.value);
+  if (!amt) return;
+  const cardIdx = getSelectedCard(ccId);
+
+  // Mark as spent on this subcat row
+  const d = D.subcats[i];
+  d.spent = (d.spent || 0) + amt;
+  d.ccCharged = (d.ccCharged || 0) + amt;
+
+  // Route to the specific card — charged tracks what's on the card,
+  // amountSaved keeps the matching money in savings until you pay the CC
+  const cd = D.creditCards[cardIdx] || { creditRemaining: 0, charged: 0, amountSaved: 0 };
+  cd.charged = (cd.charged || 0) + amt;
+  cd.amountSaved = (cd.amountSaved || 0) + amt;
+  D.creditCards[cardIdx] = cd;
+
+  inp.value = '';
+  const sptEl = document.getElementById(`sv-sc-spt-${i}`);
+  if (sptEl) sptEl.value = d.spent.toFixed(2);
+  updateScTot(i);
+  renderSvCC();
+}
+
+function renderSvBills() {
+  const bills = S.bills || [];
+  const tbody = document.getElementById('sv-bill-body');
+  tbody.innerHTML = '';
+  bills.forEach((bill, i) => {
+    const d = D.bills[i] || {};
+    const inactive = bill.notInSavings;
+    const bal = inactive ? 0 : billBal(d);
+    const tr = document.createElement('tr');
+    if (inactive) tr.className = 'inactive-row';
+    const ccId = `sv-bl-cc-${i}`;
+    tr.innerHTML = `
+      <td>
+        <div class="rn">${bill.name || '—'}</div>
+        <div class="rs">${bill.enteredFreq || ''}${bill.date ? ' · from ' + bill.date : ''}</div>
+        ${inactive ? '<span class="inactive-tag">Paid immediately</span>' : ''}
+      </td>
+      <td class="num">
+        ${inactive ? '—' : `<div class="saved-col">
+          <span style="font-weight:500">${fmt(d.amountSaved || 0)}</span>
+          <button class="btn btn-sm" onclick="stzBill(${i})">Set to zero</button>
+        </div>`}
+      </td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-bl-add-${i}" value="${(d.manualAdd || 0).toFixed(2)}">`}</td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-bl-spt-${i}" value="${(d.spent || 0).toFixed(2)}">`}</td>
+      <td class="num" id="sv-bl-tot-${i}"><span class="${fc(bal)}">${inactive ? '—' : fmt(bal)}</span></td>
+      <td>${inactive ? '<span style="color:var(--text3);font-size:12px">—</span>' : `
+        <div class="cc-cell">
+          ${ccCardSelect(ccId)}
+          <input class="cc-amt-inp" id="${ccId}" placeholder="0.00">
+          <button class="cc-btn" onclick="ccAddBl(${i})">Add</button>
+        </div>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+    if (!inactive) {
+      attachMath(document.getElementById(`sv-bl-add-${i}`), v => { D.bills[i].manualAdd = v; updateBlTot(i); });
+      attachMath(document.getElementById(`sv-bl-spt-${i}`), v => { D.bills[i].spent = v; updateBlTot(i); });
+    }
+  });
+}
+
+function updateBlTot(i) {
+  const bal = billBal(D.bills[i]);
+  const el = document.getElementById(`sv-bl-tot-${i}`);
+  if (el) el.innerHTML = `<span class="${fc(bal)}">${fmt(bal)}</span>`;
+  renderSvGrand();
+}
+
+function stzBill(i) {
+  const d = D.bills[i];
+  d.carriedTotal = billBal(d);
+  d.amountSaved = 0; d.manualAdd = 0; d.spent = 0;
+  // ccCharged intentionally NOT reset
+  renderSvBills(); renderSvGrand();
+}
+
+function ccAddBl(i) {
+  const ccId = `sv-bl-cc-${i}`;
+  const inp = document.getElementById(ccId);
+  const amt = evalExpr(inp.value);
+  if (!amt) return;
+  const cardIdx = getSelectedCard(ccId);
+
+  const d = D.bills[i];
+  d.spent = (d.spent || 0) + amt;
+  d.ccCharged = (d.ccCharged || 0) + amt;
+
+  const cd = D.creditCards[cardIdx] || { creditRemaining: 0, charged: 0, amountSaved: 0 };
+  cd.charged = (cd.charged || 0) + amt;
+  cd.amountSaved = (cd.amountSaved || 0) + amt;
+  D.creditCards[cardIdx] = cd;
+
+  inp.value = '';
+  const sptEl = document.getElementById(`sv-bl-spt-${i}`);
+  if (sptEl) sptEl.value = d.spent.toFixed(2);
+  updateBlTot(i);
+  renderSvCC();
+}
+
+// ============================================================
+// CREDIT CARD SECTION
+// ============================================================
+function renderSvCC() {
+  const ccs = S.creditCards || [];
+  const section = document.getElementById('sv-cc-section');
+  if (!ccs.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const list = document.getElementById('sv-cc-list');
+  list.innerHTML = '';
+
+  ccs.forEach((cc, i) => {
+    const cd = D.creditCards[i] || { creditRemaining: 0, charged: 0, amountSaved: 0 };
+    const limit = cc.limit || 0;
+    const creditRemaining = cd.creditRemaining || 0;
+    const charged = cd.charged || 0;
+    const amountSaved = cd.amountSaved || 0;
+    const hasRemaining = creditRemaining > 0;
+    const owing = hasRemaining ? Math.max(0, limit - creditRemaining - amountSaved) : 0;
+
+    const div = document.createElement('div');
+    div.className = 'sv-cc-card';
+    div.innerHTML = `
+      <div style="font-weight:500;font-size:15px;margin-bottom:12px">${cc.name || 'Card ' + (i + 1)}</div>
+
+      <div class="g3" style="margin-bottom:10px">
+        <div><div class="f-micro">Credit limit</div><div class="f-val">${fmt(limit)}</div></div>
+        <div><div class="f-micro">Total charged to card</div><div id="sv-cc-charged-${i}" class="f-val${charged > 0 ? ' neg' : ''}">${fmt(charged)}</div></div>
+        <div><div class="f-micro">Amount in savings</div><div id="sv-cc-saved-${i}" class="f-val${amountSaved > 0 ? ' pos' : ''}">${fmt(amountSaved)}</div></div>
+      </div>
+
+      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <div class="f-micro" id="sv-cc-rem-lbl-${i}">Credit remaining${hasRemaining ? '' : ' — enter to see amount owing'}</div>
+          <input type="text" id="sv-cc-rem-${i}" value="${creditRemaining > 0 ? creditRemaining.toFixed(2) : ''}"
+            placeholder="e.g. 2500.00" style="height:32px">
+        </div>
+        <div id="sv-cc-owing-wrap-${i}" style="flex:1;min-width:140px;${hasRemaining ? '' : 'display:none'}">
+          <div class="f-micro">Amount owing</div>
+          <div class="owing-pill" style="margin-top:0;padding:7px 12px">
+            <div style="font-size:11px;color:var(--text2)">Limit − remaining − savings</div>
+            <span id="sv-cc-owing-val-${i}" style="font-size:15px;font-weight:500;margin-left:8px" class="${owing === 0 ? 'pos' : 'neg'}">${fmt(owing)}</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="sep">
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text2);min-width:110px;flex-shrink:0">Charge card:</span>
+          <input class="cc-amt-inp" id="sv-cc-chg-inp-${i}" placeholder="0.00" style="width:90px">
+          <button class="cc-btn" onclick="ccCharge(${i})">Charge</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text2);min-width:110px;flex-shrink:0">Add to savings:</span>
+          <input class="cc-amt-inp" id="sv-cc-add-inp-${i}" placeholder="0.00" style="width:90px">
+          <button class="cc-btn" onclick="ccCardAdd(${i})">Add</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text2);min-width:110px;flex-shrink:0">Paid card:</span>
+          <input class="cc-amt-inp" id="sv-cc-pay-inp-${i}" placeholder="0.00" style="width:90px">
+          <button class="cc-btn" onclick="ccPaid(${i})" style="color:var(--green);border-color:var(--green)">
+            <i class="ti ti-check" aria-hidden="true"></i> Paid
+          </button>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+
+    // Credit remaining: update data on every keystroke then targeted-refresh (no DOM rebuild = no focus loss)
+    const remEl = document.getElementById(`sv-cc-rem-${i}`);
+    remEl.addEventListener('input', () => {
+      D.creditCards[i].creditRemaining = evalExpr(remEl.value);
+      refreshCCCard(i);
+      saveD();
+    });
+
+    // Enter key support for all three action inputs
+    const chgInp = document.getElementById(`sv-cc-chg-inp-${i}`);
+    chgInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ccCharge(i); } });
+
+    const addInp = document.getElementById(`sv-cc-add-inp-${i}`);
+    addInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ccCardAdd(i); } });
+
+    const payInp = document.getElementById(`sv-cc-pay-inp-${i}`);
+    payInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ccPaid(i); } });
+  });
+
+  renderCCTotals();
+  renderSvGrand();
+}
+
+// Targeted in-place refresh for a single CC card — no DOM re-creation, preserves focus
+function refreshCCCard(i) {
+  const cc = S.creditCards[i];
+  const cd = D.creditCards[i] || {};
+  const limit = cc ? cc.limit || 0 : 0;
+  const cr = cd.creditRemaining || 0;
+  const charged = cd.charged || 0;
+  const saved = cd.amountSaved || 0;
+  const hasR = cr > 0;
+  const owing = hasR ? Math.max(0, limit - cr - saved) : 0;
+
+  const chargedEl = document.getElementById(`sv-cc-charged-${i}`);
+  if (chargedEl) { chargedEl.textContent = fmt(charged); chargedEl.className = 'f-val' + (charged > 0 ? ' neg' : ''); }
+
+  const savedEl = document.getElementById(`sv-cc-saved-${i}`);
+  if (savedEl) { savedEl.textContent = fmt(saved); savedEl.className = 'f-val' + (saved > 0 ? ' pos' : ''); }
+
+  const lbl = document.getElementById(`sv-cc-rem-lbl-${i}`);
+  if (lbl) lbl.textContent = 'Credit remaining' + (hasR ? '' : ' — enter to see amount owing');
+
+  const wrap = document.getElementById(`sv-cc-owing-wrap-${i}`);
+  if (wrap) {
+    wrap.style.display = hasR ? '' : 'none';
+    const valEl = document.getElementById(`sv-cc-owing-val-${i}`);
+    if (valEl) {
+      valEl.textContent = fmt(owing);
+      valEl.className = owing === 0 ? 'pos' : 'neg';
+    }
+  }
+
+  renderCCTotals();
+  renderSvGrand();
+}
+
+function renderCCTotals() {
+  const ccs = S.creditCards || [];
+  let totalCharged = 0, totalSaved = 0;
+  ccs.forEach((cc, i) => { const cd = D.creditCards[i] || {}; totalCharged += cd.charged || 0; totalSaved += cd.amountSaved || 0; });
+  document.getElementById('sv-cc-totals').innerHTML = ccs.length > 1 ? `
+    <div style="border-top:0.5px solid var(--border);margin-top:12px;padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="gb"><div class="gb-l">Total charged (all cards)</div><div class="gb-v${totalCharged > 0 ? ' neg' : ''}">${fmt(totalCharged)}</div></div>
+      <div class="gb"><div class="gb-l">Total in savings (all cards)</div><div class="gb-v${totalSaved > 0 ? ' pos' : ''}">${fmt(totalSaved)}</div></div>
+    </div>
+  ` : '';
+}
+
+// Charge card — records a purchase charged to this card (outside tracked expenses)
+function ccCharge(i) {
+  const inp = document.getElementById(`sv-cc-chg-inp-${i}`);
+  const amt = evalExpr(inp.value);
+  if (!amt) return;
+  const cd = D.creditCards[i] || { creditRemaining: 0, charged: 0, amountSaved: 0 };
+  cd.charged = (cd.charged || 0) + amt;
+  D.creditCards[i] = cd;
+  inp.value = '';
+  saveD();
+  renderSvCC();
+}
+
+// Add to savings for a specific CC (e.g. manually transferred from main account)
+function ccCardAdd(i) {
+  const inp = document.getElementById(`sv-cc-add-inp-${i}`);
+  const amt = evalExpr(inp.value);
+  if (!amt) return;
+  const cd = D.creditCards[i] || { creditRemaining: 0, charged: 0, amountSaved: 0 };
+  cd.amountSaved = (cd.amountSaved || 0) + amt;
+  D.creditCards[i] = cd;
+  inp.value = '';
+  saveD();
+  renderSvCC();
+}
+
+// Pay the CC — reduces charged and removes paid amount from savings
+function ccPaid(i) {
+  const inp = document.getElementById(`sv-cc-pay-inp-${i}`);
+  const paidAmt = evalExpr(inp.value);
+  if (!paidAmt) { showToast('Enter the amount you paid'); return; }
+  const cd = D.creditCards[i] || { creditRemaining: 0, charged: 0, amountSaved: 0 };
+  cd.charged = Math.max(0, (cd.charged || 0) - paidAmt);
+  cd.amountSaved = Math.max(0, (cd.amountSaved || 0) - paidAmt);
+  D.creditCards[i] = cd;
+  inp.value = '';
+  saveD();
+  renderSvCC();
+  showToast('Payment of ' + fmt(paidAmt) + ' recorded');
+}
+
+// ============================================================
+// GRAND TOTAL
+// Grand total = subcatBals + billBals + CC amountSaved
+// CC money stays in savings until paid
+// ============================================================
+function renderSvGrand() {
+  const cats = S.categories || [];
+  const bills = S.bills || [];
+  const ccs = S.creditCards || [];
+
+  let scTot = 0;
+  cats.forEach((c, i) => { if (!c.notInSavings) scTot += subcatBal(D.subcats[i] || {}); });
+  let blTot = 0;
+  bills.forEach((b, i) => { if (!b.notInSavings) blTot += billBal(D.bills[i] || {}); });
+  let ccSaved = 0;
+  ccs.forEach((cc, i) => { ccSaved += (D.creditCards[i] || {}).amountSaved || 0; });
+
+  const grand = scTot + blTot + ccSaved;
+
+  const gridItems = [
+    `<div class="gb"><div class="gb-l">Sub-category totals</div><div class="gb-v ${fc(scTot)}">${fmt(scTot)}</div></div>`,
+    `<div class="gb"><div class="gb-l">Expense totals</div><div class="gb-v ${fc(blTot)}">${fmt(blTot)}</div></div>`
+  ];
+  if (ccs.length) {
+    gridItems.push(`<div class="gb"><div class="gb-l">Credit card savings</div><div class="gb-v ${fc(ccSaved)}">${fmt(ccSaved)}</div></div>`);
+  }
+
+  document.getElementById('sv-grand-grid').innerHTML = gridItems.join('');
+  const gtEl = document.getElementById('sv-grand-total');
+  gtEl.textContent = fmt(grand);
+  gtEl.className = fc(grand);
+}
+
+function saveSavingsPage() {
+  S.notes.savings = document.getElementById('sv-note').value;
+  saveD(); saveS();
+  showToast('Saved');
+}
+
+// ============================================================
+// SETTINGS PAGE
+// ============================================================
+function initSettings() {
+  document.getElementById('st-note').value = S.notes.settings || '';
+  document.getElementById('st-show-w').checked = S.displayCols.w !== false;
+  document.getElementById('st-show-f').checked = S.displayCols.f !== false;
+  document.getElementById('st-show-m').checked = S.displayCols.m !== false;
+  renderCatList();
+  renderBillList();
+  renderCCList();
+}
+
+function renderCatList() {
+  const cats = S.categories || [];
+  const list = document.getElementById('st-cat-list');
+  list.innerHTML = '';
+  cats.forEach((cat, i) => {
+    const d = document.createElement('div');
+    d.className = 'cat-card';
+    d.innerHTML = `
+      <div class="cat-hdr">
+        <i class="ti ti-tag" aria-hidden="true" style="font-size:15px;color:var(--text2);flex-shrink:0"></i>
+        <input type="text" value="${cat.name}" placeholder="Category name" oninput="S.categories[${i}].name=this.value">
+        <button class="btn btn-del" onclick="removeCat(${i})" aria-label="Remove"><i class="ti ti-x" aria-hidden="true"></i></button>
+      </div>
+      <div class="g2" style="margin-bottom:8px">
+        <div>
+          <div class="f-micro">Percentage of pay</div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" value="${cat.pct || 0}" min="0" max="100" step="0.5"
+              oninput="S.categories[${i}].pct=parseFloat(this.value)||0;updateSpend()">
+            <span style="font-size:13px;color:var(--text2);flex-shrink:0">%</span>
+          </div>
+        </div>
+        <div>
+          <div class="f-micro">Calculate from</div>
+          <select onchange="S.categories[${i}].basis=this.value">
+            <option value="full" ${cat.basis === 'full' ? 'selected' : ''}>Full paycheck</option>
+            <option value="after" ${cat.basis !== 'full' ? 'selected' : ''}>After expenses</option>
+          </select>
+        </div>
+      </div>
+      <hr class="sep">
+      <div class="tgl-row" style="margin-bottom:8px">
+        <label class="tgl">
+          <input type="checkbox" ${cat.toSavings ? 'checked' : ''} onchange="S.categories[${i}].toSavings=this.checked;renderCatList()">
+          <span class="tgl-s"></span>
+        </label>
+        <span class="tgl-lbl">${cat.toSavings ? 'Moves to savings account' : 'Stays in main account'}</span>
+      </div>
+      <div class="chk-row">
+        <input type="checkbox" id="st-cat-ni-${i}" ${cat.notInSavings ? 'checked' : ''} onchange="S.categories[${i}].notInSavings=this.checked">
+        <label class="chk-lbl" for="st-cat-ni-${i}">Paid immediately — shows on savings page but doesn't add to balance</label>
+      </div>
+    `;
+    list.appendChild(d);
+  });
+  document.getElementById('st-add-cat-btn').style.display = cats.length >= 4 ? 'none' : '';
+  updateSpend();
+}
+
+function updateSpend() {
+  const total = (S.categories || []).reduce((s, c) => s + (parseFloat(c.pct) || 0), 0);
+  const left = Math.max(0, 100 - total);
+  const el = document.getElementById('st-spend-pct');
+  el.textContent = (left % 1 === 0 ? left.toFixed(0) : left.toFixed(1)) + '%';
+  el.style.color = total > 100 ? 'var(--red)' : 'var(--green)';
+}
+
+function addCat() {
+  if ((S.categories || []).length >= 4) return;
+  if (!S.categories) S.categories = [];
+  S.categories.push({ name: '', pct: 10, basis: 'after', toSavings: false, notInSavings: false });
+  ensureArrays();
+  renderCatList();
+}
+function removeCat(i) {
+  S.categories.splice(i, 1);
+  D.subcats.splice(i, 1);
+  renderCatList();
+}
+
+function renderBillList() {
+  const bills = S.bills || [];
+  const list = document.getElementById('st-bill-list');
+  list.innerHTML = '';
+
+  bills.forEach((bill, i) => {
+    const d = document.createElement('div');
+    d.className = 'bill-card';
+    d.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start">
+        <div style="flex:1">
+          <div class="f-micro">Bill name</div>
+          <input type="text" value="${bill.name || ''}" placeholder="e.g. Rent" oninput="S.bills[${i}].name=this.value">
+        </div>
+        <button class="btn btn-del" onclick="removeBill(${i})" aria-label="Remove" style="margin-top:17px"><i class="ti ti-x" aria-hidden="true"></i></button>
+      </div>
+      <div class="g3" style="margin-bottom:8px">
+        <div>
+          <div class="f-micro">Amount ($)</div>
+          <input type="text" id="bill-amt-${i}" value="${bill.amount > 0 ? bill.amount : ''}" placeholder="0.00">
+        </div>
+        <div>
+          <div class="f-micro">Entered as</div>
+          <select id="bill-freq-${i}" onchange="S.bills[${i}].enteredFreq=this.value;updateBillChips(${i})">
+            <option value="weekly" ${bill.enteredFreq === 'weekly' ? 'selected' : ''}>Weekly</option>
+            <option value="fortnightly" ${bill.enteredFreq === 'fortnightly' ? 'selected' : ''}>Fortnightly</option>
+            <option value="monthly" ${bill.enteredFreq === 'monthly' ? 'selected' : ''}>Monthly</option>
+          </select>
+        </div>
+        <div>
+          <div class="f-micro">Set aside</div>
+          <select onchange="S.bills[${i}].setAsideFreq=this.value">
+            <option value="weekly" ${bill.setAsideFreq === 'weekly' ? 'selected' : ''}>Weekly</option>
+            <option value="fortnightly" ${(bill.setAsideFreq || 'fortnightly') === 'fortnightly' ? 'selected' : ''}>Fortnightly</option>
+          </select>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:8px">
+        <div>
+          <div class="f-micro">Transfer date (auto-schedules from this date)</div>
+          <input type="date" value="${bill.date || ''}" onchange="S.bills[${i}].date=this.value">
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:5px;flex-wrap:wrap" id="bill-chips-${i}"></div>
+      </div>
+      <hr class="sep">
+      <div class="chk-row">
+        <input type="checkbox" id="st-bl-ni-${i}" ${bill.notInSavings ? 'checked' : ''} onchange="S.bills[${i}].notInSavings=this.checked">
+        <label class="chk-lbl" for="st-bl-ni-${i}">Paid immediately — shows on savings page but doesn't add to balance</label>
+      </div>
+    `;
+    list.appendChild(d);
+
+    const amtEl = document.getElementById(`bill-amt-${i}`);
+    amtEl.addEventListener('input', () => {
+      const v = parseFloat(amtEl.value);
+      if (!isNaN(v) && v >= 0) { S.bills[i].amount = v; updateBillChips(i); }
+    });
+    amtEl.addEventListener('blur', () => {
+      const v = evalExpr(amtEl.value);
+      S.bills[i].amount = v;
+      amtEl.value = v > 0 ? v.toFixed(2) : '';
+      updateBillChips(i);
+    });
+    updateBillChips(i);
+  });
+
+  updateBillTotals();
+}
+
+function updateBillChips(i) {
+  const bill = S.bills[i];
+  if (!bill) return;
+  const showW = document.getElementById('st-show-w').checked;
+  const showF = document.getElementById('st-show-f').checked;
+  const showM = document.getElementById('st-show-m').checked;
+  const chips = [];
+  if (showW) chips.push(`<span class="chip">Weekly <strong>${fmt(toWeekly(bill.amount || 0, bill.enteredFreq))}</strong></span>`);
+  if (showF) chips.push(`<span class="chip">Fortnightly <strong>${fmt(toFortnightly(bill.amount || 0, bill.enteredFreq))}</strong></span>`);
+  if (showM) chips.push(`<span class="chip">Monthly <strong>${fmt(toMonthly(bill.amount || 0, bill.enteredFreq))}</strong></span>`);
+  const el = document.getElementById(`bill-chips-${i}`);
+  if (el) el.innerHTML = chips.join('');
+  updateBillTotals();
+}
+
+function updateAllBillChips() { (S.bills || []).forEach((_, i) => updateBillChips(i)); }
+
+function updateBillTotals() {
+  const bills = S.bills || [];
+  const showW = document.getElementById('st-show-w') ? document.getElementById('st-show-w').checked : true;
+  const showF = document.getElementById('st-show-f') ? document.getElementById('st-show-f').checked : true;
+  const showM = document.getElementById('st-show-m') ? document.getElementById('st-show-m').checked : true;
+  const chips = [];
+  if (showW) chips.push(`<div class="tc"><div class="tc-l">Total weekly</div><div class="tc-v">${fmt(bills.reduce((s, b) => s + toWeekly(b.amount || 0, b.enteredFreq), 0))}</div></div>`);
+  if (showF) chips.push(`<div class="tc"><div class="tc-l">Total fortnightly</div><div class="tc-v">${fmt(bills.reduce((s, b) => s + toFortnightly(b.amount || 0, b.enteredFreq), 0))}</div></div>`);
+  if (showM) chips.push(`<div class="tc"><div class="tc-l">Total monthly</div><div class="tc-v">${fmt(bills.reduce((s, b) => s + toMonthly(b.amount || 0, b.enteredFreq), 0))}</div></div>`);
+  const el = document.getElementById('st-bill-totals');
+  if (el) el.innerHTML = chips.join('');
+}
+
+function addBill() {
+  if (!S.bills) S.bills = [];
+  S.bills.push({ name: '', amount: 0, enteredFreq: 'monthly', setAsideFreq: 'fortnightly', date: '', notInSavings: false });
+  ensureArrays();
+  renderBillList();
+}
+function removeBill(i) { S.bills.splice(i, 1); D.bills.splice(i, 1); renderBillList(); }
+
+function renderCCList() {
+  const ccs = S.creditCards || [];
+  const list = document.getElementById('st-cc-list');
+  list.innerHTML = '';
+  ccs.forEach((cc, i) => {
+    const d = document.createElement('div');
+    d.className = 'bill-card';
+    d.innerHTML = `
+      <div class="g2">
+        <div>
+          <div class="f-micro">Card name</div>
+          <input type="text" value="${cc.name || ''}" placeholder="e.g. Visa" oninput="S.creditCards[${i}].name=this.value">
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="f-micro">Credit limit ($)</div>
+            <input type="number" value="${cc.limit || ''}" min="0" step="1" placeholder="3000"
+              oninput="S.creditCards[${i}].limit=parseFloat(this.value)||0">
+          </div>
+          <button class="btn btn-del" onclick="removeCC(${i})" aria-label="Remove" style="margin-top:17px"><i class="ti ti-x" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    `;
+    list.appendChild(d);
+  });
+}
+
+function addCC() {
+  if (!S.creditCards) S.creditCards = [];
+  S.creditCards.push({ name: '', limit: 0 });
+  ensureArrays();
+  renderCCList();
+}
+function removeCC(i) {
+  S.creditCards.splice(i, 1);
+  D.creditCards.splice(i, 1);
+  renderCCList();
+}
+
+function saveAllSettings() {
+  S.notes.settings = document.getElementById('st-note').value;
+  S.displayCols = {
+    w: document.getElementById('st-show-w').checked,
+    f: document.getElementById('st-show-f').checked,
+    m: document.getElementById('st-show-m').checked
+  };
+  ensureArrays();
+  saveS(); saveD();
+  showToast('Settings saved');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadAll();
+initPaycheck();
+</script>
+</body>
+</html>
