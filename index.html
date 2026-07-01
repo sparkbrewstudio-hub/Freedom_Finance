@@ -467,8 +467,59 @@ function ensureArrays() {
   while (D.creditCards.length < ncc) D.creditCards.push({ creditRemaining: 0, charged: 0, amountSaved: 0 });
 }
 
-function saveS() { localStorage.setItem('fp_s', JSON.stringify(S)); }
-function saveD() { localStorage.setItem('fp_d', JSON.stringify(D)); }
+function saveS() { localStorage.setItem('fp_s', JSON.stringify(S)); syncToCloud(); }
+function saveD() { localStorage.setItem('fp_d', JSON.stringify(D)); syncToCloud(); }
+
+// ============================================================
+// CLOUD SYNC (Firebase Firestore) — keeps phone and computer in sync
+// ============================================================
+let cloudSyncTimer = null;
+function syncToCloud() {
+  if (!window.cloudSave) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(() => {
+    window.cloudSave({ S, D, updatedAt: Date.now() });
+  }, 400);
+}
+
+function rerenderCurrentPage() {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  if (active.id === 'page-paycheck') initPaycheck();
+  else if (active.id === 'page-savings') initSavings();
+  else if (active.id === 'page-settings') initSettings();
+}
+
+// Called by the Firebase module script once it has connected
+window.onCloudReady = async function() {
+  try {
+    const cloudData = await window.cloudLoadOnce();
+    if (cloudData && cloudData.S && cloudData.D) {
+      S = cloudData.S;
+      D = cloudData.D;
+      ensureArrays();
+      localStorage.setItem('fp_s', JSON.stringify(S));
+      localStorage.setItem('fp_d', JSON.stringify(D));
+      checkScheduledExpenses();
+      rerenderCurrentPage();
+    } else {
+      syncToCloud(); // no cloud copy yet — push this device's data up as the first copy
+    }
+  } catch (e) { console.error('Cloud init failed', e); }
+
+  window.cloudSubscribe(data => {
+    if (!data || !data.S || !data.D) return;
+    const incoming = JSON.stringify({ S: data.S, D: data.D });
+    const current = JSON.stringify({ S, D });
+    if (incoming === current) return; // ignore the echo of our own write
+    S = data.S; D = data.D;
+    ensureArrays();
+    localStorage.setItem('fp_s', JSON.stringify(S));
+    localStorage.setItem('fp_d', JSON.stringify(D));
+    rerenderCurrentPage();
+    showToast('Synced from another device');
+  });
+};
 
 function saveCurrentNotes() {
   const pc = document.getElementById('pc-note');
@@ -477,6 +528,20 @@ function saveCurrentNotes() {
   if (pc) S.notes.paycheck = pc.value;
   if (sv) S.notes.savings = sv.value;
   if (st) S.notes.settings = st.value;
+  saveS();
+}
+
+// Notes are static fields in the HTML (never re-rendered), so wire autosave once at startup
+function setupNoteAutosave() {
+  const map = { 'pc-note': 'paycheck', 'sv-note': 'savings', 'st-note': 'settings' };
+  Object.keys(map).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      S.notes[map[id]] = el.value;
+      saveS();
+    });
+  });
 }
 
 // ============================================================
@@ -1385,6 +1450,59 @@ function saveAllSettings() {
 // ============================================================
 loadAll();
 initPaycheck();
+setupNoteAutosave();
+</script>
+
+<script type="module">
+// Dynamic imports (not static) so a failure — e.g. opening this file directly from
+// disk instead of the hosted https:// URL, which blocks cross-origin module imports —
+// is caught and surfaced instead of failing silently with no console output.
+(async () => {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getFirestore, doc, getDoc, setDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgKIbkFtjQ13TpasAPCldRPdOVeEVjEXk",
+      authDomain: "freedom-finance-fac3a.firebaseapp.com",
+      projectId: "freedom-finance-fac3a",
+      storageBucket: "freedom-finance-fac3a.firebasestorage.app",
+      messagingSenderId: "127111495129",
+      appId: "1:127111495129:web:d78991c8bfeea3fe7a2dc8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const docRef = doc(db, "finance", "shared");
+
+    window.cloudSave = function(payload) {
+      setDoc(docRef, payload).catch(err => {
+        console.error('Cloud save failed', err);
+        if (window.showToast) window.showToast('Cloud save failed — see console');
+      });
+    };
+
+    window.cloudLoadOnce = async function() {
+      const snap = await getDoc(docRef);
+      return snap.exists() ? snap.data() : null;
+    };
+
+    window.cloudSubscribe = function(onData) {
+      onSnapshot(docRef, snap => {
+        if (snap.exists()) onData(snap.data());
+      }, err => {
+        console.error('Cloud sync error', err);
+        if (window.showToast) window.showToast('Cloud sync error — see console');
+      });
+    };
+
+    if (window.onCloudReady) await window.onCloudReady();
+    console.log('Cloud sync connected');
+  } catch (e) {
+    console.error('Cloud sync failed to initialize — likely opened via file:// instead of the hosted https:// URL, or a Firestore rules/network issue:', e);
+    if (window.showToast) window.showToast('Cloud sync unavailable — see console (F12)');
+  }
+})();
 </script>
 </body>
 </html>
