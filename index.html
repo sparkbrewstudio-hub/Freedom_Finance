@@ -429,7 +429,7 @@ function attachMath(el, cb) {
   el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
   el.addEventListener('blur', () => {
     const v = evalExpr(el.value);
-    el.value = v.toFixed(2);
+    el.value = v > 0 ? v.toFixed(2) : '';
     cb(v);
   });
 }
@@ -482,6 +482,23 @@ function saveCurrentNotes() {
 // ============================================================
 // SCHEDULED EXPENSES
 // ============================================================
+// Local (not UTC) YYYY-MM-DD — toISOString() shifts the date across timezone
+// boundaries and caused the schedule to re-trigger a day or two after each transfer.
+function localDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function advancePeriod(date, freq) {
+  const next = new Date(date);
+  if (freq === 'weekly') next.setDate(next.getDate() + 7);
+  else if (freq === 'monthly') next.setMonth(next.getMonth() + 1);
+  else next.setDate(next.getDate() + 14); // fortnightly
+  return next;
+}
+
 function checkScheduledExpenses() {
   const today = new Date();
   today.setHours(23, 59, 59, 999);
@@ -496,9 +513,8 @@ function checkScheduledExpenses() {
     if (isNaN(startDate.getTime()) || startDate > today) return;
 
     const freq = bill.setAsideFreq || 'fortnightly';
-    const intervalDays = freq === 'weekly' ? 7 : 14;
-    const amtPerPeriod = freq === 'weekly'
-      ? toWeekly(bill.amount || 0, bill.enteredFreq)
+    const amtPerPeriod = freq === 'weekly' ? toWeekly(bill.amount || 0, bill.enteredFreq)
+      : freq === 'monthly' ? toMonthly(bill.amount || 0, bill.enteredFreq)
       : toFortnightly(bill.amount || 0, bill.enteredFreq);
 
     const lastStr = D.bills[i].lastAddedDate;
@@ -506,13 +522,13 @@ function checkScheduledExpenses() {
 
     let current = new Date(startDate);
     if (lastAdded) {
-      while (current <= lastAdded) current.setDate(current.getDate() + intervalDays);
+      while (current <= lastAdded) current = advancePeriod(current, freq);
     }
 
     while (current <= today) {
       D.bills[i].amountSaved = (D.bills[i].amountSaved || 0) + amtPerPeriod;
-      D.bills[i].lastAddedDate = current.toISOString().split('T')[0];
-      current.setDate(current.getDate() + intervalDays);
+      D.bills[i].lastAddedDate = localDateStr(current);
+      current = advancePeriod(current, freq);
       changed = true;
     }
   });
@@ -569,7 +585,7 @@ function calcPaycheck() {
   const freq = document.getElementById('pc-freq').value;
   const monthly = (S.bills || []).reduce((s, b) => s + toMonthly(b.amount || 0, b.enteredFreq), 0);
   const periodExp = toPeriod(monthly, 'monthly', freq);
-  const afterExp = Math.max(0, income - periodExp);
+  const afterExp = income - periodExp;
 
   document.getElementById('pc-gross').textContent = fmt(income);
   document.getElementById('pc-exp-period').textContent = fmt(periodExp);
@@ -613,7 +629,10 @@ function renderPcSubcats(income, afterExp) {
     tbody.appendChild(tr);
   });
 
-  document.getElementById('pc-spend-amt').textContent = fmt(Math.max(0, afterExp - totalDeducted));
+  const spendAmt = afterExp - totalDeducted;
+  const spendEl = document.getElementById('pc-spend-amt');
+  spendEl.textContent = fmt(spendAmt);
+  spendEl.className = fc(spendAmt);
   document.getElementById('pc-transfer').textContent = fmt(transferTotal);
 }
 
@@ -624,7 +643,7 @@ function transferToSavings() {
   const freq = document.getElementById('pc-freq').value;
   const monthly = (S.bills || []).reduce((s, b) => s + toMonthly(b.amount || 0, b.enteredFreq), 0);
   const periodExp = toPeriod(monthly, 'monthly', freq);
-  const afterExp = Math.max(0, income - periodExp);
+  const afterExp = income - periodExp;
   const ooTotal = ooItems.reduce((s, it) => s + evalExpr(it.amount), 0);
 
   ensureArrays();
@@ -728,7 +747,7 @@ function renderSvSubcats() {
     const ccId = `sv-sc-cc-${i}`;
     tr.innerHTML = `
       <td>
-        <div class="rn">${cat.name || '—'}</div>
+        <div class="rn">${cat.name || '—'}${inactive ? '' : ` <span id="sv-sc-name-tot-${i}" class="${fc(bal)}" style="font-weight:500">${fmt(bal)}</span>`}</div>
         <div class="rs">${cat.pct}% · ${cat.basis === 'full' ? 'full pay' : 'after expenses'}</div>
         ${inactive ? '<span class="inactive-tag">Paid immediately</span>' : ''}
       </td>
@@ -738,8 +757,8 @@ function renderSvSubcats() {
           <button class="btn btn-sm" onclick="stzSc(${i})">Set to zero</button>
         </div>`}
       </td>
-      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-sc-add-${i}" value="${(d.manualAdd || 0).toFixed(2)}">`}</td>
-      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-sc-spt-${i}" value="${(d.spent || 0).toFixed(2)}">`}</td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-sc-add-${i}" value="${d.manualAdd > 0 ? d.manualAdd.toFixed(2) : ''}">`}</td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-sc-spt-${i}" value="${d.spent > 0 ? d.spent.toFixed(2) : ''}">`}</td>
       <td class="num" id="sv-sc-tot-${i}"><span class="${fc(bal)}">${inactive ? '—' : fmt(bal)}</span></td>
       <td>${inactive ? '<span style="color:var(--text3);font-size:12px">—</span>' : `
         <div class="cc-cell">
@@ -761,6 +780,8 @@ function updateScTot(i) {
   const bal = subcatBal(D.subcats[i]);
   const el = document.getElementById(`sv-sc-tot-${i}`);
   if (el) el.innerHTML = `<span class="${fc(bal)}">${fmt(bal)}</span>`;
+  const nameEl = document.getElementById(`sv-sc-name-tot-${i}`);
+  if (nameEl) { nameEl.textContent = fmt(bal); nameEl.className = fc(bal); }
   renderSvGrand();
 }
 
@@ -811,8 +832,8 @@ function renderSvBills() {
     const ccId = `sv-bl-cc-${i}`;
     tr.innerHTML = `
       <td>
-        <div class="rn">${bill.name || '—'}</div>
-        <div class="rs">${bill.enteredFreq || ''}${bill.date ? ' · from ' + bill.date : ''}</div>
+        <div class="rn">${bill.name || '—'}${inactive ? '' : ` <span id="sv-bl-name-tot-${i}" class="${fc(bal)}" style="font-weight:500">${fmt(bal)}</span>`}</div>
+        <div class="rs">${bill.setAsideFreq || 'fortnightly'}</div>
         ${inactive ? '<span class="inactive-tag">Paid immediately</span>' : ''}
       </td>
       <td class="num">
@@ -821,8 +842,8 @@ function renderSvBills() {
           <button class="btn btn-sm" onclick="stzBill(${i})">Set to zero</button>
         </div>`}
       </td>
-      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-bl-add-${i}" value="${(d.manualAdd || 0).toFixed(2)}">`}</td>
-      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-bl-spt-${i}" value="${(d.spent || 0).toFixed(2)}">`}</td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-bl-add-${i}" value="${d.manualAdd > 0 ? d.manualAdd.toFixed(2) : ''}">`}</td>
+      <td class="num">${inactive ? '—' : `<input class="mi" id="sv-bl-spt-${i}" value="${d.spent > 0 ? d.spent.toFixed(2) : ''}">`}</td>
       <td class="num" id="sv-bl-tot-${i}"><span class="${fc(bal)}">${inactive ? '—' : fmt(bal)}</span></td>
       <td>${inactive ? '<span style="color:var(--text3);font-size:12px">—</span>' : `
         <div class="cc-cell">
@@ -844,6 +865,8 @@ function updateBlTot(i) {
   const bal = billBal(D.bills[i]);
   const el = document.getElementById(`sv-bl-tot-${i}`);
   if (el) el.innerHTML = `<span class="${fc(bal)}">${fmt(bal)}</span>`;
+  const nameEl = document.getElementById(`sv-bl-name-tot-${i}`);
+  if (nameEl) { nameEl.textContent = fmt(bal); nameEl.className = fc(bal); }
   renderSvGrand();
 }
 
@@ -924,6 +947,13 @@ function renderSvCC() {
           </div>
         </div>
       </div>
+      <div id="sv-cc-tocharge-wrap-${i}" style="${hasRemaining ? '' : 'display:none'};margin-bottom:10px">
+        <div class="f-micro">Not yet logged as charged</div>
+        <div class="owing-pill" style="margin-top:0;padding:7px 12px">
+          <div style="font-size:11px;color:var(--text2)">Limit − remaining − total charged</div>
+          <span id="sv-cc-tocharge-val-${i}" style="font-size:15px;font-weight:500;margin-left:8px" class="${(limit - creditRemaining - charged) <= 0 ? 'pos' : 'neg'}">${fmt(limit - creditRemaining - charged)}</span>
+        </div>
+      </div>
 
       <hr class="sep">
       <div style="display:flex;flex-direction:column;gap:7px">
@@ -998,6 +1028,17 @@ function refreshCCCard(i) {
     if (valEl) {
       valEl.textContent = fmt(owing);
       valEl.className = owing === 0 ? 'pos' : 'neg';
+    }
+  }
+
+  const tcWrap = document.getElementById(`sv-cc-tocharge-wrap-${i}`);
+  if (tcWrap) {
+    tcWrap.style.display = hasR ? '' : 'none';
+    const tcVal = document.getElementById(`sv-cc-tocharge-val-${i}`);
+    if (tcVal) {
+      const toCharge = limit - cr - charged;
+      tcVal.textContent = fmt(toCharge);
+      tcVal.className = toCharge <= 0 ? 'pos' : 'neg';
     }
   }
 
@@ -1211,9 +1252,10 @@ function renderBillList() {
         </div>
         <div>
           <div class="f-micro">Set aside</div>
-          <select onchange="S.bills[${i}].setAsideFreq=this.value">
+          <select onchange="S.bills[${i}].setAsideFreq=this.value;updateBillChips(${i})">
             <option value="weekly" ${bill.setAsideFreq === 'weekly' ? 'selected' : ''}>Weekly</option>
             <option value="fortnightly" ${(bill.setAsideFreq || 'fortnightly') === 'fortnightly' ? 'selected' : ''}>Fortnightly</option>
+            <option value="monthly" ${bill.setAsideFreq === 'monthly' ? 'selected' : ''}>Monthly</option>
           </select>
         </div>
       </div>
